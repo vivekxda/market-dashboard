@@ -8,6 +8,39 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Mock Data for Demo Mode (GitHub Pages)
+  const mockData = {
+    isDemo: true,
+    isOpen: true,
+    lastUpdated: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+    indices: [
+      { name: 'NIFTY 50', value: 22500.50, change: 120.50, percent: 0.54, isUp: true },
+      { name: 'SENSEX', value: 74150.20, change: 350.10, percent: 0.47, isUp: true }
+    ],
+    stocks: [
+      { symbol: 'HDFCBANK', name: 'HDFCBANK', price: 1450.00, change: 15.00, percent: 1.05, isUp: true, sector: 'Banking' },
+      { symbol: 'RELIANCE', name: 'RELIANCE', price: 2950.00, change: -10.00, percent: -0.34, isUp: false, sector: 'Energy' },
+      { symbol: 'TCS', name: 'TCS', price: 4100.00, change: 45.00, percent: 1.11, isUp: true, sector: 'IT' },
+      { symbol: 'INFY', name: 'INFY', price: 1600.00, change: -5.00, percent: -0.31, isUp: false, sector: 'IT' },
+      { symbol: 'ICICIBANK', name: 'ICICIBANK', price: 1100.00, change: 12.00, percent: 1.10, isUp: true, sector: 'Banking' },
+      { symbol: 'SBIN', name: 'SBIN', price: 750.00, change: 8.00, percent: 1.08, isUp: true, sector: 'Banking' },
+      { symbol: 'ITC', name: 'ITC', price: 430.00, change: 2.00, percent: 0.47, isUp: true, sector: 'FMCG' },
+      { symbol: 'TATAMOTORS', name: 'TATAMOTORS', price: 980.00, change: 18.00, percent: 1.87, isUp: true, sector: 'Auto' },
+      { symbol: 'SUNPHARMA', name: 'SUNPHARMA', price: 1550.00, change: -15.00, percent: -0.96, isUp: false, sector: 'Pharma' },
+      { symbol: 'TATASTEEL', name: 'TATASTEEL', price: 155.00, change: 1.50, percent: 0.98, isUp: true, sector: 'Metals' }
+    ],
+    topGainers: [
+      { symbol: 'TATAMOTORS', name: 'TATAMOTORS', price: 980.00, change: 18.00, percent: 1.87, isUp: true },
+      { symbol: 'TCS', name: 'TCS', price: 4100.00, change: 45.00, percent: 1.11, isUp: true },
+      { symbol: 'ICICIBANK', name: 'ICICIBANK', price: 1100.00, change: 12.00, percent: 1.10, isUp: true }
+    ],
+    topLosers: [
+      { symbol: 'SUNPHARMA', name: 'SUNPHARMA', price: 1550.00, change: -15.00, percent: -0.96, isUp: false },
+      { symbol: 'RELIANCE', name: 'RELIANCE', price: 2950.00, change: -10.00, percent: -0.34, isUp: false },
+      { symbol: 'INFY', name: 'INFY', price: 1600.00, change: -5.00, percent: -0.31, isUp: false }
+    ]
+  };
+
   const fetchMarketData = async () => {
     try {
       setLoading(true);
@@ -17,7 +50,9 @@ const App = () => {
       const data = await response.json();
       setMarketData(data);
     } catch (err) {
-      setError(err.message);
+      console.warn('Backend unreachable, switching to Demo Mode');
+      setMarketData(mockData);
+      // Don't set error, so UI shows data
     } finally {
       setLoading(false);
     }
@@ -36,16 +71,7 @@ const App = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="stock-page error-container">
-        <AlertCircle size={48} color="#ef4444" />
-        <h3>Unable to load market data</h3>
-        <p>{error}</p>
-        <button onClick={fetchMarketData} className="retry-btn">Try Again</button>
-      </div>
-    );
-  }
+  // No error block needed as we fall back to mockData
 
   const { indices, topGainers, topLosers } = marketData || {};
   const isOpen = marketData?.isOpen;
@@ -62,6 +88,12 @@ const App = () => {
               <span>Market is {isOpen ? 'Open' : 'Closed'}</span>
               <span className="divider">•</span>
               <span>Updated {lastUpdated}</span>
+              {marketData?.isDemo && (
+                <>
+                  <span className="divider">•</span>
+                  <span className="demo-badge">Demo Mode</span>
+                </>
+              )}
             </div>
           </div>
           <button className="refresh-btn" onClick={fetchMarketData}>

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import yahooFinance from 'yahoo-finance2';
 import fs from 'fs';
 
 const app = express();
@@ -13,67 +12,68 @@ app.get('/', (req, res) => {
   res.send('Market Server is running');
 });
 
+const fetchNSEData = async () => {
+  try {
+    const response = await fetch('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY 50', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://www.nseindia.com/'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`NSE API failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching NSE data:', error.message);
+    return [];
+  }
+};
+
+const getSector = (symbol) => {
+  const sectorMap = {
+    'HDFCBANK': 'Banking', 'ICICIBANK': 'Banking', 'SBIN': 'Banking', 'AXISBANK': 'Banking', 'KOTAKBANK': 'Banking',
+    'TCS': 'IT', 'INFY': 'IT', 'HCLTECH': 'IT', 'WIPRO': 'IT', 'TECHM': 'IT',
+    'RELIANCE': 'Energy', 'ONGC': 'Energy', 'NTPC': 'Energy', 'POWERGRID': 'Energy', 'BPCL': 'Energy',
+    'TATAMOTORS': 'Auto', 'MARUTI': 'Auto', 'M&M': 'Auto', 'BAJAJ-AUTO': 'Auto', 'EICHERMOT': 'Auto',
+    'ITC': 'FMCG', 'HINDUNILVR': 'FMCG', 'NESTLEIND': 'FMCG', 'BRITANNIA': 'FMCG', 'TATACONSUM': 'FMCG',
+    'SUNPHARMA': 'Pharma', 'CIPLA': 'Pharma', 'DRREDDY': 'Pharma', 'DIVISLAB': 'Pharma', 'APOLLOHOSP': 'Pharma',
+    'TATASTEEL': 'Metals', 'HINDALCO': 'Metals', 'JSWSTEEL': 'Metals', 'COALINDIA': 'Metals', 'ADANIENT': 'Metals'
+  };
+  return sectorMap[symbol] || 'Others';
+};
+
 app.get('/api/market/data', async (req, res) => {
   try {
-    const yf = new yahooFinance();
-    
-    const indicesSymbols = [
-      '^NSEI', '^BSESN', '^NSEBANK', '^CNXIT', 
-      '^CNXAUTO', '^CNXMETAL', '^CNXFMCG', '^CNXPHARMA', 
-      '^CNXENERGY', '^CNXREALTY', '^CNXINFRA', '^CNXPSUBANK'
-    ];
-    
-    const stockSymbols = [
-      'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'AXISBANK.NS', 'KOTAKBANK.NS',
-      'TCS.NS', 'INFY.NS', 'HCLTECH.NS', 'WIPRO.NS', 'TECHM.NS',
-      'RELIANCE.NS', 'ONGC.NS', 'NTPC.NS', 'POWERGRID.NS', 'BPCL.NS',
-      'TATAMOTORS.NS', 'MARUTI.NS', 'M&M.NS', 'BAJAJ-AUTO.NS', 'EICHERMOT.NS',
-      'ITC.NS', 'HINDUNILVR.NS', 'NESTLEIND.NS', 'BRITANNIA.NS', 'TATACONSUM.NS',
-      'SUNPHARMA.NS', 'CIPLA.NS', 'DRREDDY.NS', 'DIVISLAB.NS', 'APOLLOHOSP.NS',
-      'TATASTEEL.NS', 'HINDALCO.NS', 'JSWSTEEL.NS', 'COALINDIA.NS', 'ADANIENT.NS'
-    ];
+    const rawStocks = await fetchNSEData();
 
-    const results = await yf.quote([...indicesSymbols, ...stockSymbols]);
-
-    const indices = results.filter(q => indicesSymbols.includes(q.symbol)).map(q => ({
-      name: getSymbolName(q.symbol),
-      value: q.regularMarketPrice,
-      change: q.regularMarketChange,
-      percent: q.regularMarketChangePercent,
-      isUp: q.regularMarketChange >= 0
+    // Map NSE data to our format
+    const stocks = rawStocks.slice(1).map(stock => ({ // Slice 1 to skip index summary if present
+      symbol: stock.symbol,
+      name: stock.symbol, // NSE doesn't provide full name in this endpoint easily, using symbol
+      price: stock.lastPrice,
+      change: stock.change,
+      percent: stock.pChange,
+      isUp: stock.change >= 0,
+      sector: getSector(stock.symbol)
     }));
 
-    const sectorMap = {
-      'Banking': ['HDFCBANK', 'ICICIBANK', 'SBIN', 'AXISBANK', 'KOTAKBANK'],
-      'IT': ['TCS', 'INFY', 'HCLTECH', 'WIPRO', 'TECHM'],
-      'Energy': ['RELIANCE', 'ONGC', 'NTPC', 'POWERGRID', 'BPCL'],
-      'Auto': ['TATAMOTORS', 'MARUTI', 'M&M', 'BAJAJ-AUTO', 'EICHERMOT'],
-      'FMCG': ['ITC', 'HINDUNILVR', 'NESTLEIND', 'BRITANNIA', 'TATACONSUM'],
-      'Pharma': ['SUNPHARMA', 'CIPLA', 'DRREDDY', 'DIVISLAB', 'APOLLOHOSP'],
-      'Metals': ['TATASTEEL', 'HINDALCO', 'JSWSTEEL', 'COALINDIA', 'ADANIENT']
-    };
-
-    const getSector = (symbol) => {
-      const cleanSymbol = symbol.replace('.NS', '');
-      for (const [sector, stocks] of Object.entries(sectorMap)) {
-        if (stocks.includes(cleanSymbol)) return sector;
-      }
-      return 'Others';
-    };
-
-    const stocks = results.filter(q => stockSymbols.includes(q.symbol)).map(q => ({
-      symbol: q.symbol.replace('.NS', ''),
-      name: q.shortName || q.longName,
-      price: q.regularMarketPrice,
-      change: q.regularMarketChange,
-      percent: q.regularMarketChangePercent,
-      isUp: q.regularMarketChange >= 0,
-      sector: getSector(q.symbol)
-    }));
-
+    // Sort by percent change
     stocks.sort((a, b) => b.percent - a.percent);
+
     const topGainers = stocks.slice(0, 5);
     const topLosers = stocks.slice(-5).reverse();
+
+    // Mock indices for now (or fetch separately if needed)
+    const indices = [
+      { name: 'NIFTY 50', value: rawStocks[0]?.lastPrice || 0, change: rawStocks[0]?.change || 0, percent: rawStocks[0]?.pChange || 0, isUp: (rawStocks[0]?.change || 0) >= 0 },
+      { name: 'SENSEX', value: 74000, change: 150, percent: 0.2, isUp: true } // Placeholder
+    ];
 
     res.json({
       isOpen: isMarketOpen(),
@@ -85,32 +85,9 @@ app.get('/api/market/data', async (req, res) => {
     });
   } catch (error) {
     console.error('Market data error:', error);
-    try {
-      fs.writeFileSync('error.log', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    } catch (logError) {
-      console.error('Failed to write error log:', logError);
-    }
-    res.status(500).json({ error: 'Failed to fetch market data: ' + error.message });
+    res.status(500).json({ error: 'Failed to fetch market data' });
   }
 });
-
-function getSymbolName(symbol) {
-  const map = {
-    '^NSEI': 'NIFTY 50',
-    '^BSESN': 'SENSEX',
-    '^NSEBANK': 'BANK NIFTY',
-    '^CNXIT': 'NIFTY IT',
-    '^CNXAUTO': 'NIFTY AUTO',
-    '^CNXMETAL': 'NIFTY METAL',
-    '^CNXFMCG': 'NIFTY FMCG',
-    '^CNXPHARMA': 'NIFTY PHARMA',
-    '^CNXENERGY': 'NIFTY ENERGY',
-    '^CNXREALTY': 'NIFTY REALTY',
-    '^CNXINFRA': 'NIFTY INFRA',
-    '^CNXPSUBANK': 'NIFTY PSU BANK'
-  };
-  return map[symbol] || symbol;
-}
 
 function isMarketOpen() {
   const now = new Date();
