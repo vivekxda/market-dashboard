@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight, RefreshCw, AlertCircle } from 'lucide-react';
-import PolarHeatmap from './components/PolarHeatmap';
+import TradingViewHeatmap from './components/TradingViewHeatmap';
 import './App.css';
 
 const App = () => {
@@ -52,7 +52,6 @@ const App = () => {
     } catch (err) {
       console.warn('Backend unreachable, switching to Demo Mode');
       setMarketData(mockData);
-      // Don't set error, so UI shows data
     } finally {
       setLoading(false);
     }
@@ -70,8 +69,6 @@ const App = () => {
       </div>
     );
   }
-
-  // No error block needed as we fall back to mockData
 
   const { indices, topGainers, topLosers } = marketData || {};
   const isOpen = marketData?.isOpen;
@@ -128,7 +125,7 @@ const App = () => {
               <h2>Market Heatmap</h2>
             </div>
           </div>
-          <PolarHeatmap stocks={marketData?.stocks || []} />
+          <TradingViewHeatmap stocks={marketData?.stocks || []} />
         </div>
 
         <div className="market-movers">
