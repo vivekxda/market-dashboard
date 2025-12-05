@@ -2,6 +2,7 @@
   "name": "market-dashboard",
   "private": true,
   "version": "0.0.0",
+  "author": "Vivek Kumar <vivekkumar.xda@gmail.com>",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"nodemon server/index.js\" \"vite\"",

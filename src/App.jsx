@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight, RefreshCw, AlertCircle } from 'lucide-react';
+import PolarHeatmap from './components/PolarHeatmap';
 import './App.css';
 
 const App = () => {
@@ -50,24 +51,6 @@ const App = () => {
   const isOpen = marketData?.isOpen;
   const lastUpdated = marketData?.lastUpdated;
 
-  const groupBySector = (stocks) => {
-    return stocks.reduce((acc, stock) => {
-      const sector = stock.sector || 'Others';
-      if (!acc[sector]) acc[sector] = [];
-      acc[sector].push(stock);
-      return acc;
-    }, {});
-  };
-
-  const getHeatmapColor = (percent) => {
-    if (percent >= 3) return '#059669';
-    if (percent >= 1) return '#10b981';
-    if (percent >= 0) return '#34d399';
-    if (percent >= -1) return '#f87171';
-    if (percent >= -3) return '#ef4444';
-    return '#b91c1c';
-  };
-
   return (
     <div className="stock-page">
       <div className="stock-header glass-panel">
@@ -113,29 +96,7 @@ const App = () => {
               <h2>Market Heatmap</h2>
             </div>
           </div>
-          <div className="heatmap-grid">
-            {Object.entries(groupBySector(marketData?.stocks || [])).map(([sector, stocks]) => (
-              <div key={sector} className="sector-block">
-                <h3 className="sector-title">{sector}</h3>
-                <div className="sector-stocks">
-                  {stocks.map((stock, i) => (
-                    <div 
-                      key={i} 
-                      className="heatmap-item"
-                      style={{ 
-                        backgroundColor: getHeatmapColor(stock.percent),
-                        flex: Math.max(1, Math.abs(stock.percent))
-                      }}
-                      title={`${stock.name}: ${stock.percent?.toFixed(2)}%`}
-                    >
-                      <span className="ticker">{stock.symbol}</span>
-                      <span className="percent">{stock.percent?.toFixed(2)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <PolarHeatmap stocks={marketData?.stocks || []} />
         </div>
 
         <div className="market-movers">
