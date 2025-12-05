@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight, RefreshCw, AlertCircle } from 'lucide-react';
-import TradingViewHeatmap from './components/TradingViewHeatmap';
+import SectorView from './components/SectorView';
 import './App.css';
 
 const App = () => {
@@ -122,63 +122,13 @@ const App = () => {
           <div className="section-header">
             <div className="title-group">
               <Activity size={24} className="icon-activity" />
-              <h2>Market Heatmap</h2>
+              <h2>Sector Performance</h2>
             </div>
           </div>
-          <TradingViewHeatmap stocks={marketData?.stocks || []} />
+          <SectorView stocks={marketData?.stocks || []} />
         </div>
 
-        <div className="market-movers">
-          <div className="movers-section glass-panel">
-            <div className="section-header">
-              <div className="title-group">
-                <TrendingUp size={24} className="icon-up" />
-                <h2>Top Gainers</h2>
-              </div>
-            </div>
-            <div className="stocks-list">
-              {topGainers?.map((stock, i) => (
-                <div key={i} className="stock-item">
-                  <div className="stock-info">
-                    <span className="stock-symbol">{stock.symbol}</span>
-                    <span className="stock-name">{stock.name}</span>
-                  </div>
-                  <div className="stock-price">
-                    <span className="price">₹{stock.price?.toLocaleString('en-IN')}</span>
-                    <span className="change up">
-                      +{stock.change?.toFixed(2)} ({stock.percent?.toFixed(2)}%)
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="movers-section glass-panel">
-            <div className="section-header">
-              <div className="title-group">
-                <TrendingDown size={24} className="icon-down" />
-                <h2>Top Losers</h2>
-              </div>
-            </div>
-            <div className="stocks-list">
-              {topLosers?.map((stock, i) => (
-                <div key={i} className="stock-item">
-                  <div className="stock-info">
-                    <span className="stock-symbol">{stock.symbol}</span>
-                    <span className="stock-name">{stock.name}</span>
-                  </div>
-                  <div className="stock-price">
-                    <span className="price">₹{stock.price?.toLocaleString('en-IN')}</span>
-                    <span className="change down">
-                      {stock.change?.toFixed(2)} ({stock.percent?.toFixed(2)}%)
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Right panel removed - Top Gainers/Losers now in sector view */}
       </div>
     </div>
   );

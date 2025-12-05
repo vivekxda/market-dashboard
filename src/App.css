@@ -24,17 +24,19 @@ body {
 
 .stock-page {
   height: 100vh;
-  padding: 0.5rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
 .stock-header {
   padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
@@ -102,7 +104,7 @@ body {
 }
 
 .ticker-container {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   padding: 0.5rem 0;
   overflow: hidden;
   white-space: nowrap;
@@ -160,8 +162,8 @@ body {
 
 .market-content {
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 1fr;
+  gap: 0;
   flex: 1;
   min-height: 0;
 }
@@ -279,8 +281,10 @@ body {
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
+  flex: 1;
   height: 100%;
   min-height: 0;
+  overflow: hidden;
 }
 
 .heatmap-grid {

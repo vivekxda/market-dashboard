@@ -14,9 +14,10 @@ app.get('/', (req, res) => {
 
 const fetchNSEData = async () => {
   try {
-    const response = await fetch('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY 50', {
+    console.log('Fetching NIFTY 200...');
+    const response = await fetch('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY 200', {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
         'Referer': 'https://www.nseindia.com/'
@@ -28,6 +29,7 @@ const fetchNSEData = async () => {
     }
 
     const data = await response.json();
+    console.log(`NIFTY 200: ${data.data?.length || 0} stocks fetched`);
     return data.data || [];
   } catch (error) {
     console.error('Error fetching NSE data:', error.message);

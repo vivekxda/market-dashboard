@@ -30,20 +30,20 @@ const TradingViewHeatmap = ({ stocks }) => {
     }));
   }, [stocks]);
 
-  // TradingView-style color palette
+  // Darker gradient color palette matching the UI reference
   const getColor = (percent) => {
-    if (percent >= 3) return '#00796b';    // Dark teal green - Strong gain
-    if (percent >= 2) return '#009688';    // Teal green
-    if (percent >= 1.5) return '#26a69a';  // Medium teal
-    if (percent >= 1) return '#4db6ac';    // Light teal
-    if (percent >= 0.5) return '#80cbc4';  // Pale teal
-    if (percent >= 0) return '#b2dfdb';    // Very pale teal
-    if (percent >= -0.5) return '#ffcdd2'; // Very pale red
-    if (percent >= -1) return '#ef9a9a';   // Pale red
-    if (percent >= -1.5) return '#e57373'; // Light red
-    if (percent >= -2) return '#ef5350';   // Medium red
-    if (percent >= -3) return '#f44336';   // Red
-    return '#c62828';                       // Dark red - Strong loss
+    if (percent >= 3) return '#0d9488';    // Dark teal - Strong gain
+    if (percent >= 2) return '#14b8a6';    // Teal 
+    if (percent >= 1.5) return '#2dd4bf';  // Lighter teal
+    if (percent >= 1) return '#5eead4';    // Light teal
+    if (percent >= 0.5) return '#99f6e4';  // Very light teal
+    if (percent >= 0) return '#ccfbf1';    // Pale teal
+    if (percent >= -0.5) return '#fecdd3'; // Very pale pink
+    if (percent >= -1) return '#fda4af';   // Light pink
+    if (percent >= -1.5) return '#fb7185'; // Pink
+    if (percent >= -2) return '#f43f5e';   // Rose
+    if (percent >= -3) return '#e11d48';   // Dark rose
+    return '#be123c';                      // Very dark rose - Strong loss
   };
 
   const CustomizedContent = (props) => {
@@ -188,7 +188,7 @@ const TradingViewHeatmap = ({ stocks }) => {
         <Treemap
           data={data}
           dataKey="size"
-          ratio={1}
+          aspectRatio={4/1}
           stroke="#1e293b"
           content={<CustomizedContent />}
           isAnimationActive={false}
